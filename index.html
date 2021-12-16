@@ -15,66 +15,69 @@
  }
 </style>
 <body>
- <div id="canvas-container" class="inline-block">
-   <canvas id="myChart" width="20" height="10"></canvas>
- </div>
-</body>
 
-<script>
-   var ctx = document.getElementById('myChart').getContext('2d');
-   var chart = new Chart(ctx, {
-     type: 'line',
-     data: {
-       datasets: [{
-         label: '値',
-         fill: true,
-         data: [],
-         backgroundColor:'rgba(255, 99, 132, 0.2)',
-         borderColor:'rgba(255, 99, 132, 0.8)',
-         lineTension: 0.5
-       }]
-     },
-     options: {
-       legend: {
-         position: 'bottom'
-       },
-       title: {
-           display: true,
-           text: '動くグラフ',
-           fontSize: 24
-       },
-       scales: {
-         xAxes: [{
-           type: 'realtime',
-           distribution: 'series',
-           // x軸を非表示
-           ticks: {
-               callback: function(value, index, values){
-                   return null
-               },
-           },
-           realtime: {
-             duration: 10000,
-             delay: 1000,
-             refresh: 1000,
-             frameRate: 30,
-             onRefresh: function(chart) {
-               chart.data.datasets[0].data.push({
-                   x: Date.now(), // タイムスタンプ
-                   y: getValue()  // ここで定義した関数を指定
-               });
-             },
-           },
-         }],
-         yAxes: [{
-           ticks: {
-               min: -1,
-               max: 1
-           }
-         }]
-       }
-     }
-   });
-   
-   </script>
-</html>
+<canvas id="myLineChart"></canvas>
+
+    <script>
+        var ctx = document.getElementById("myLineChart");
+        var config = config_reset("cpu使用率");
+        window.myLineChart = new Chart(ctx, config);
+        setTimeout(loop(), 0);
+
+        function config_reset(label) {
+            return {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: label,
+                        data: [],
+                        borderColor: "#ff0000",
+                        backgroundColor: "rgba(0,0,0,0)"
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: false,
+                        text: 'cpu使用率'
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    }
+                }
+            }
+        }
+
+
+        function loop() {
+            setTimeout(function () {
+                loop()
+            }, 1000);
+            fetch(`./api`)
+                .then(response => {
+                    response.json().then(userInfo => {
+                        var now = new Date();
+                        var Hour = now.getHours();
+                        var Min = now.getMinutes();
+                        var Sec = now.getSeconds();
+                        if (Hour < 10) Hour = "0" + Hour;
+                        if (Min < 10) Min = "0" + Min;
+                        if (Sec < 10) Sec = "0" + Sec;
+                        config.data.labels.push(String(Hour + ":" + Min + ":" + Sec));
+                        config.data.datasets.forEach(function (dataset) {
+                            dataset.data.push(userInfo);
+                        });
+
+
+                        window.myLineChart.update();
+                    });
+                });
+        }
+    </script>
+</body></html>
