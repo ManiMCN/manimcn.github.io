@@ -1,51 +1,80 @@
+<!-- HTML -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang = "ja">
 <head>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@latest/dist/chartjs-plugin-streaming.min.js"></script>
+   <meta charset = "utf-8">
 </head>
-
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@latest/dist/chartjs-plugin-streaming.min.js"></script>
+<!-- ここで自分が定義した関数を読み込む -->
+<script type="text/javascript" src="./myScript.js"></script>
+<style>
+ #canvas-container {
+   width: 50%;
+ }
+</style>
 <body>
-
-<canvas id="myChart"></canvas>
+ <div id="canvas-container" class="inline-block">
+   <canvas id="myChart" width="20" height="10"></canvas>
+ </div>
+</body>
 
 <script>
-var ctx = document.getElementById('myChart').getContext('2d');
-
-var chart = new Chart(ctx, {
-
-  type: 'line',
-
-  data: {
-
-    datasets: [{
-
-      data: []
-
-    }, {
-
-      data: []
-
-    }]
-
-  },
-
-  options: {
-
-    scales: {
-
-      xAxes: [{
-
-        type: 'realtime'     <!-- Barメソッドを実行すれば棒グラフ -->
-
-      }]
-
-    }
-
-  }
-
-});
-</script>
-</body>
+   var ctx = document.getElementById('myChart').getContext('2d');
+   var chart = new Chart(ctx, {
+     type: 'line',
+     data: {
+       datasets: [{
+         label: '値',
+         fill: true,
+         data: [],
+         backgroundColor:'rgba(255, 99, 132, 0.2)',
+         borderColor:'rgba(255, 99, 132, 0.8)',
+         lineTension: 0.5
+       }]
+     },
+     options: {
+       legend: {
+         position: 'bottom'
+       },
+       title: {
+           display: true,
+           text: '動くグラフ',
+           fontSize: 24
+       },
+       scales: {
+         xAxes: [{
+           type: 'realtime',
+           distribution: 'series',
+           // x軸を非表示
+           ticks: {
+               callback: function(value, index, values){
+                   return null
+               },
+           },
+           realtime: {
+             duration: 10000,
+             delay: 1000,
+             refresh: 1000,
+             frameRate: 30,
+             onRefresh: function(chart) {
+               chart.data.datasets[0].data.push({
+                   x: Date.now(), // タイムスタンプ
+                   y: getValue()  // ここで定義した関数を指定
+               });
+             },
+           },
+         }],
+         yAxes: [{
+           ticks: {
+               min: -1,
+               max: 1
+           }
+         }]
+       }
+     }
+   });
+   
+   </script>
 </html>
